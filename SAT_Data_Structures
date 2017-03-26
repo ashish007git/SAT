@@ -7,3 +7,4 @@ Sort all the literals (numerically with sign) for each of the clauses separately
 One maintaining all the complemented literals (-ve numbers) and other maintaining uncomplemented literals (+ve numbers).
 
 Stack to maintain only the free decisions that we have made so far. Upon backtracking, pop the appropriate elements from the top of the stack.
+Hello.
