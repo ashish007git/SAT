@@ -21,3 +21,5 @@ All forced decisions will be because of 2-SAT.
 
 All forced decisions not involved in conflict literal, and thus can  be retained even after backtracking.
 They are anyway satisfying some of the clauses.
+
+Can we incorporate huffman encoding for the variables? Not good idea.
