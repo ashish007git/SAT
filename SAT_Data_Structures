@@ -7,4 +7,17 @@ Sort all the literals (numerically with sign) for each of the clauses separately
 One maintaining all the complemented literals (-ve numbers) and other maintaining uncomplemented literals (+ve numbers).
 
 Stack to maintain only the free decisions that we have made so far. Upon backtracking, pop the appropriate elements from the top of the stack.
-Hello.
+
+if(parent == null) free decision.
+else forced decision.
+
+store free decisions in adjacency list??
+
+decide variable to branch on based on max clauses containing x or x'.
+
+Resolution of unit clauses which have binate variable is a CONFLICT.
+
+All forced decisions will be because of 2-SAT.
+
+All forced decisions not involved in conflict literal, and thus can  be retained even after backtracking.
+They are anyway satisfying some of the clauses.
