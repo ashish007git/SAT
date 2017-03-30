@@ -26,3 +26,7 @@ Can we incorporate huffman encoding for the variables? Not good idea.
 
 Binate variables are the ones to result in conflict eventually. Hence, prioritise assigning binate variables.
 Unate variables will anyway satisfy by appropriate assignment.
+
+Is it possible to maintain the count of unassigned literals other than watch variables.
+So, when any other variable other than watch varibale is being picked, we decrement this count till 0.
+A count of 0 => 2-SAT. Hence we can prioritise free decisions from this clause.
