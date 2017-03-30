@@ -23,3 +23,6 @@ All forced decisions not involved in conflict literal, and thus can  be retained
 They are anyway satisfying some of the clauses.
 
 Can we incorporate huffman encoding for the variables? Not good idea.
+
+Binate variables are the ones to result in conflict eventually. Hence, prioritise assigning binate variables.
+Unate variables will anyway satisfy by appropriate assignment.
