@@ -1,0 +1,141 @@
+//============================================================================
+// Name        : SAT.cpp
+// Author      : 
+// Version     :
+// Copyright   : Your copyright notice
+// Description : Hello World in C++, Ansi-style
+//============================================================================
+
+#include <iostream>
+#include <stack>
+using namespace std;
+
+
+typedef struct Lit
+{
+	int id;
+	int val;
+
+	bool zeros;
+	bool ones;
+}Lit;
+
+
+void display(Lit *l, int num)
+{
+	for(int i=0; i<num; i++)
+	{
+		cout<<l[i].id<<" = "<<l[i].val<<"\n";
+	}
+	cout<<"\n\n";
+}
+
+int DFS(Lit *l, int num)
+{
+	Lit T[num];
+	Lit temp;
+	stack<Lit> S;
+
+	for(int i=0; i<num; i++)
+	{
+		T[i] = l[i];
+		//cout<<T[i].id<<".."<<T[i].val<<"\n";
+	}
+
+	//Start from l[0]
+	S.push(T[0]);
+	int j = 0;
+	int k = 1;
+	while(! S.empty())
+	{
+		temp = S.top();
+		S.pop();
+
+		if(temp.zeros==false and temp.ones==false)
+		{
+			temp.zeros = true;
+			temp.val = 0;
+			T[j] = temp;
+			S.push(temp);
+
+			if(j < num-1)
+			{
+				S.push(T[j+1]);
+				j++;
+			}
+			if(k==0)
+			{
+				display(T, num);
+			}
+
+		}
+		else if(temp.ones==false)
+		{
+			temp.ones = true;
+			temp.val = 1;
+			T[j] = temp;
+			S.push(temp);
+
+			if(j < num-1)
+			{
+				S.push(T[j+1]);
+				j++;
+			}
+			if(k==0)
+			{
+				display(T, num);
+			}
+		}
+		else if(temp.zeros==true and temp.ones==true)
+		{
+			temp.ones = false;
+			temp.zeros = false;
+			T[j] = temp;
+			j--;
+			k = 1;
+		}
+		if(j==num-1)
+		{
+			k = 0;
+		}
+	}
+
+	return 0;
+}
+
+
+int main()
+{
+	stack<Lit> S;
+	Lit x;
+	Lit m[5];
+
+	//Push- S.push(x)
+	//Access top- x = S.top()
+	//Pop- S.pop()
+
+	for(int i=0; i<5; i++)
+	{
+		x.id = i+1;
+		x.val = 2;
+		x.ones = false;
+		x.zeros = false;
+		S.push(x);
+		m[i] = x;
+	}
+	int y = DFS(m, 5);
+
+	/*for(int i=0; i<10; i++)
+	{
+		x = S.top();
+		cout<<"x.id = "<<x.id<<"x.val = "<<x.val<<"\n";
+		S.pop();
+	}
+
+	if(S.empty())
+	{
+		cout<<"Stack Empty!\n";
+	}*/
+
+	return 0;
+}
