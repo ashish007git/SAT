@@ -6,6 +6,15 @@
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
+/* BASIC DLL ALGORITHM
+ * Clause Satisfied/Unsatisfied checks.
+ * Clause update.
+ * Variable Selection and Assignment.
+ * BCP forced decision identification.
+ * Conflict identification.
+ * Backtracking chronologically to the parent node.
+ */
+ 
 #include <iostream>
 #include <stack>
 using namespace std;
