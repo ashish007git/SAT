@@ -1,6 +1,6 @@
 //============================================================================
 // Name        : SAT.cpp
-// Author      : 
+// Author      : Vignesh Raghavan
 // Version     :
 // Copyright   : Your copyright notice
 // Description : Hello World in C++, Ansi-style
@@ -14,7 +14,7 @@
  * Conflict identification.
  * Backtracking chronologically to the parent node.
  */
- 
+
 #include <iostream>
 #include <stack>
 using namespace std;
@@ -25,8 +25,8 @@ typedef struct Lit
 	int id;
 	int val;
 
-	bool zeros;
-	bool ones;
+	bool visited;
+	bool forced;
 }Lit;
 
 
@@ -58,51 +58,45 @@ int DFS(Lit *l, int num)
 	while(! S.empty())
 	{
 		temp = S.top();
-		S.pop();
+		S.pop(); //Need to reflect proper value and state of the literals always in the stack. Hence, POP->Update->PUSH.
 
-		if(temp.zeros==false and temp.ones==false)
+		if(temp.visited == false)
 		{
-			temp.zeros = true;
-			temp.val = 0;
+			if(temp.val == 2)
+			{
+				temp.val = 0; //Value computed while making a free decision. How to equate from previous iteration?
+			}
+			else
+			{
+				temp.val = (~temp.val) & 0x1; //Toggle the value assigned upon backtracking.
+				temp.visited = true;
+			}
+
 			T[j] = temp;
 			S.push(temp);
+			if(k == 0) display(T, num);
+
+			//Classify Satisfied and Unsatisfied clauses with current assignment.
+			//Find forced decisions and populate the queue.
+			//Pop the head of the queue, (if not empty) and push it into the stack.
+			//If queue empty, pick a variable based on heuristics.
+			//And, push it into the stack as the next free decision.
 
 			if(j < num-1)
 			{
-				S.push(T[j+1]);
+				S.push(T[j+1]); //Push Next variable computed before (free/forced decision).
 				j++;
 			}
-			if(k==0)
-			{
-				display(T, num);
-			}
-
 		}
-		else if(temp.ones==false)
+		else
 		{
-			temp.ones = true;
-			temp.val = 1;
-			T[j] = temp;
-			S.push(temp);
-
-			if(j < num-1)
-			{
-				S.push(T[j+1]);
-				j++;
-			}
-			if(k==0)
-			{
-				display(T, num);
-			}
-		}
-		else if(temp.zeros==true and temp.ones==true)
-		{
-			temp.ones = false;
-			temp.zeros = false;
+			temp.visited = false;
+			temp.val = 2;
 			T[j] = temp;
 			j--;
-			k = 1;
+			k=1;
 		}
+
 		if(j==num-1)
 		{
 			k = 0;
@@ -117,24 +111,25 @@ int main()
 {
 	stack<Lit> S;
 	Lit x;
-	Lit m[5];
+	int num = 5;
+	Lit m[num];
 
 	//Push- S.push(x)
 	//Access top- x = S.top()
 	//Pop- S.pop()
 
-	for(int i=0; i<5; i++)
+	for(int i=0; i<num; i++)
 	{
 		x.id = i+1;
 		x.val = 2;
-		x.ones = false;
-		x.zeros = false;
+		x.visited = false;
+		x.forced = false;
 		S.push(x);
 		m[i] = x;
 	}
-	int y = DFS(m, 5);
+	int y = DFS(m, num);
 
-	/*for(int i=0; i<10; i++)
+	/*for(int i=0; i<num; i++)
 	{
 		x = S.top();
 		cout<<"x.id = "<<x.id<<"x.val = "<<x.val<<"\n";
