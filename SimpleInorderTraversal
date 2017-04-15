@@ -17,16 +17,18 @@
 
 #include <iostream>
 #include <stack>
+#include <queue>
 using namespace std;
 
 
 typedef struct Lit
 {
 	int id;
-	int val;
+	bool val; // 75% in memory savings wi.re.to (int) val variable. Easy to check SAT/UNSAT by ORring literals.
 
-	bool visited;
-	bool forced;
+	bool assigned; //assigned = true => value assigned to the variable.
+	bool visited; //visited = true => backtrack to parent.
+	bool forced; //forced = true => forced decision.
 }Lit;
 
 
@@ -39,7 +41,7 @@ void display(Lit *l, int num)
 	cout<<"\n\n";
 }
 
-int DFS(Lit *l, int num)
+void IterativeTraversal(Lit *l, int num)
 {
 	Lit T[num];
 	Lit temp;
@@ -54,7 +56,7 @@ int DFS(Lit *l, int num)
 	//Start from l[0]
 	S.push(T[0]);
 	int j = 0;
-	int k = 1;
+	bool backtrack = false;
 	while(! S.empty())
 	{
 		temp = S.top();
@@ -62,25 +64,32 @@ int DFS(Lit *l, int num)
 
 		if(temp.visited == false)
 		{
-			if(temp.val == 2)
+			if(backtrack == false)
 			{
-				temp.val = 0; //Value computed while making a free decision. How to equate from previous iteration?
+				temp.val = false; //Value computed while making a free decision. How to equate from previous iteration?
 			}
 			else
 			{
-				temp.val = (~temp.val) & 0x1; //Toggle the value assigned upon backtracking.
+				backtrack = false;
+				temp.val = !(temp.val); //Toggle the value assigned upon backtracking.
 				temp.visited = true;
 			}
 
 			T[j] = temp;
 			S.push(temp);
-			if(k == 0) display(T, num);
 
+			//Update the value of the complement of the literal.
 			//Classify Satisfied and Unsatisfied clauses with current assignment.
 			//Find forced decisions and populate the queue.
 			//Pop the head of the queue, (if not empty) and push it into the stack.
-			//If queue empty, pick a variable based on heuristics.
+			//If queue empty, pick a variable based on heuristics and select its value.
 			//And, push it into the stack as the next free decision.
+
+			if(j == num-1)
+			{
+				backtrack = true;
+				display(T,num);
+			}
 
 			if(j < num-1)
 			{
@@ -90,20 +99,13 @@ int DFS(Lit *l, int num)
 		}
 		else
 		{
+			backtrack = true;
 			temp.visited = false;
-			temp.val = 2;
+			temp.val = false;
 			T[j] = temp;
 			j--;
-			k=1;
-		}
-
-		if(j==num-1)
-		{
-			k = 0;
 		}
 	}
-
-	return 0;
 }
 
 
@@ -113,32 +115,43 @@ int main()
 	Lit x;
 	int num = 5;
 	Lit m[num];
+	//queue<Lit> Q;
 
 	//Push- S.push(x)
 	//Access top- x = S.top()
 	//Pop- S.pop()
+	//Check empty- S.empty()
+
+	//Push- Q.push(x)
+	//Access first element- Q.front()
+	//Pop- Q.pop()
+	//Check empty- Q.empty()
 
 	for(int i=0; i<num; i++)
 	{
 		x.id = i+1;
-		x.val = 2;
+		x.val = false;
+		x.assigned = false;
 		x.visited = false;
 		x.forced = false;
 		S.push(x);
 		m[i] = x;
+		//Q.push(x);
 	}
-	int y = DFS(m, num);
+	IterativeTraversal(m, num);
 
 	/*for(int i=0; i<num; i++)
 	{
-		x = S.top();
-		cout<<"x.id = "<<x.id<<"x.val = "<<x.val<<"\n";
-		S.pop();
+		//x = S.top();
+		x = Q.front();
+		cout<<"x.id = "<<x.id<<" x.val = "<<x.val<<"\n";
+		//S.pop();
+		Q.pop();
 	}
 
-	if(S.empty())
+	if(Q.empty())//S.empty())
 	{
-		cout<<"Stack Empty!\n";
+		cout<<"Queue/Stack Empty!\n";
 	}*/
 
 	return 0;
