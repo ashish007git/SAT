@@ -43,40 +43,29 @@ void display(Lit *l, int num)
 
 void IterativeTraversal(Lit *l, int num)
 {
-	Lit T[num];
-	Lit temp;
-	stack<Lit> S;
-
-	for(int i=0; i<num; i++)
-	{
-		T[i] = l[i];
-		//cout<<T[i].id<<".."<<T[i].val<<"\n";
-	}
+	Lit* temp;
+	stack<Lit*> S;
 
 	//Start from l[0]
-	S.push(T[0]);
+	S.push(l);
 	int j = 0;
 	bool backtrack = false;
 	while(! S.empty())
 	{
 		temp = S.top();
-		S.pop(); //Need to reflect proper value and state of the literals always in the stack. Hence, POP->Update->PUSH.
 
-		if(temp.visited == false)
+		if(temp->visited == false)
 		{
 			if(backtrack == false)
 			{
-				temp.val = false; //Value computed while making a free decision. How to equate from previous iteration?
+				temp->val = false; //Value computed while making a free decision. How to equate from previous iteration?
 			}
 			else
 			{
 				backtrack = false;
-				temp.val = !(temp.val); //Toggle the value assigned upon backtracking.
-				temp.visited = true;
+				temp->val = !(temp->val); //Toggle the value assigned upon backtracking.
+				temp->visited = true;
 			}
-
-			T[j] = temp;
-			S.push(temp);
 
 			//Update the value of the complement of the literal.
 			//Classify Satisfied and Unsatisfied clauses with current assignment.
@@ -88,21 +77,21 @@ void IterativeTraversal(Lit *l, int num)
 			if(j == num-1)
 			{
 				backtrack = true;
-				display(T,num);
+				display(l,num);
 			}
 
 			if(j < num-1)
 			{
-				S.push(T[j+1]); //Push Next variable computed before (free/forced decision).
+				S.push(temp+1); //Push Next variable computed before (free/forced decision).
 				j++;
 			}
 		}
 		else
 		{
 			backtrack = true;
-			temp.visited = false;
-			temp.val = false;
-			T[j] = temp;
+			temp->visited = false;
+			//temp->val = false;
+			S.pop();
 			j--;
 		}
 	}
@@ -111,11 +100,9 @@ void IterativeTraversal(Lit *l, int num)
 
 int main()
 {
-	stack<Lit> S;
-	Lit x;
 	int num = 5;
+	Lit x;
 	Lit m[num];
-	//queue<Lit> Q;
 
 	//Push- S.push(x)
 	//Access top- x = S.top()
@@ -134,24 +121,14 @@ int main()
 		x.assigned = false;
 		x.visited = false;
 		x.forced = false;
-		S.push(x);
 		m[i] = x;
-		//Q.push(x);
 	}
+
 	IterativeTraversal(m, num);
 
 	/*for(int i=0; i<num; i++)
 	{
-		//x = S.top();
-		x = Q.front();
-		cout<<"x.id = "<<x.id<<" x.val = "<<x.val<<"\n";
-		//S.pop();
-		Q.pop();
-	}
-
-	if(Q.empty())//S.empty())
-	{
-		cout<<"Queue/Stack Empty!\n";
+		cout<<"m[i].id = "<<m[i].id<<" m[i].val = "<<m[i].val<<"\n";
 	}*/
 
 	return 0;
