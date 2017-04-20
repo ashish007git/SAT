@@ -2,15 +2,16 @@
 #include<fstream>
 #include<string>
 #include<vector>
-
+#include<stdlib.h>
 #include"types.h"
 
 using namespace std;
+using namespace SAT;
 
 int getint(ifstream *inf, char *c)
 {	
-	int val,factor;
-	int i;
+	int neg,val,factor;
+	int i = 0;
 	char buf[32];
 	
 	val = 0;
@@ -19,16 +20,16 @@ int getint(ifstream *inf, char *c)
 	
 	if(*c == '-')
 	{
-		neg =- 1;
-		*c = getc(*inf);
+		neg = -1;
+		inf->get(*c);
 	}
 	
 	do
 	{
-		buf[i++] = *c;          
- 		*c = getc(*inf);
+		buf[i++] = *c;
+		inf->get(*c);          
                                        
-	}while(*c != ' ' || *c!= '\n');
+	}while(*c != ' ' && *c!= '\n');
 	
 	for(i--; i >=0 ; i--)
 	{
@@ -36,7 +37,7 @@ int getint(ifstream *inf, char *c)
 		factor = factor*10;
 	}
 	
-	return val; 
+	return neg*val;
 }
 
 int addclause(int *larray)
@@ -48,7 +49,7 @@ int addclause(int *larray)
 
 	i = 0;
 
-	pc = new p_clause(1,false);
+	pc = new p_clause(false);
 	
 	//make clause
 	cl = new clause;
@@ -71,14 +72,14 @@ int addclause(int *larray)
 		//make clause	
 		if(larray[i] < 0)
 		{
-			cl.list.push_back(2*l-1);
-			literals.at(2*l-1).pc.push_back(pc);
+			cl->list.push_back(2*l-1);
+			literals.at(2*l-1)->pc.push_back(pc);
 		}
 		if(larray[i] > 0)
 
 		{
-			cl.list.push_back(2*l);				
-			literals.at(2*l).pc.push_back(pc);
+			cl->list.push_back(2*l);				
+			literals.at(2*l)->pc.push_back(pc);
 
 		}
 
@@ -86,6 +87,9 @@ int addclause(int *larray)
 
 	}
 
+	pc->UAcount = cl->list.size();
+	//sort cl;
+	clauses.push_back(pc);
 	return 0;
 
 }
@@ -94,38 +98,41 @@ int addclause(int *larray)
 int parsefile(string filename)
 {
 	char c;
-	int i;
+	int i=0;
 	int rlits[1000];
 	int n_clauses;
 	int n_lits;
 	
 	ifstream infile(filename.c_str());
-	if(infile.isopen())
+	if(infile.is_open())
 	{
 	do	
-	{
+	{	
+		infile.get(c);
+		cout << c << endl;
 		if(isspace(c))continue;
 		if( c == 'c')
-		{
+		{	
 			//skip whole line
-			while(getc(infile) != '\n');
+			while(c != '\n')infile.get(c);
 			
 		}
 		else if( c == 'p')
 		{
 			//skip  "p cnf"
-			while(getc(infile) != 'f');
+			while(c != 'f')infile.get(c);
 
-			while(isspace(c = getc(infile)));		
+			infile.get(c);
+			while(isspace(c))infile.get(c);		
 			n_clauses = getint(&infile,&c);
 								
-			while(isspace(c = getc(infile)));
-			n_lits	  = getint(&infile,&c);						
+			while(isspace(c))infile.get(c);		
+			n_lits = getint(&infile,&c);
 
 			//Make sure to finish parsing the line		
 			if( c == '\n')continue;
 		
-			while(isspace(c = getc(infile)));
+			while(isspace(c))infile.get(c);		
 			if( c == '\n')continue;
 			else
 			{
@@ -145,16 +152,18 @@ int parsefile(string filename)
 			else
 			{
 				rlits[i++] = getint(&infile,&c);
-			}			} 	
+			}			 	
 		} 								
 		
 	}
-	while(( c = getc(infile))!= EOF);
+	while( !infile.eof());
 	} 
 	else
 	{
 		cout << "file not openable" << endl;
 		return -1;	
 	}	
+
+	return 0;
 
 }
