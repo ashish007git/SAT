@@ -168,7 +168,7 @@ bool Solve(){
 			else    //Backtrack or Undo.
 			{
 				//Add a flag for "not in conflict clause case" - TBD
-				if(temp->forced = false && temp->visited == false)
+				if(temp->forced == false && temp->visited == false)
 				{
 					backtrack = false;
 					Undo(temp); //FF
