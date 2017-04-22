@@ -109,7 +109,6 @@ int parsefile(string filename)
 	do	
 	{	
 		infile.get(c);
-		cout << c << endl;
 		if(isspace(c))continue;
 		if( c == 'c')
 		{	
