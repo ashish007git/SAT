@@ -2,6 +2,7 @@
 #include<fstream>
 #include<string>
 #include<vector>
+#include<algorithm>
 #include<stdlib.h>
 #include"types.h"
 
@@ -40,68 +41,96 @@ int getint(ifstream *inf, char *c)
 	return neg*val;
 }
 
-int addclause(int *larray)
+
+int addclause(vector<int> larray)
 {
 	p_clause * pc;
 	clause	 * cl;
 	lit      * Lt;
+	int size;
 	int i,j,l;
+	int lim;
 
-	i = 0;
+	size = larray.size();
+
+ 	sort(larray.begin(), larray.end());
+ 	lim = max(abs(larray.at(0)), abs(larray.at(size-1)));
+
+ 	for(i = 0; i < size-1; i++)
+	{
+		if(larray.at(i) < 0)
+		{
+			for(j = i+1; j < size; j++)
+			{
+				if(larray.at(j) == -larray.at(i))
+				{
+					//Clause is redundant.
+					return 0;
+				}
+			}
+		}
+	}
 
 	pc = new p_clause(false);
 
 	//make clause
 	cl = new clause;
- 	pc->cl = cl;
-	while(larray[i] != 0)
-	{
-		l = abs(larray[i]);
-		//create only required lit,
-		if(l > literals.size()/2)
-			{
-			for(j = literals.size()/2 + 1; j <= l; j++)
-			{
-				Lt = new lit(2*j-1);
-				literals.push_back(Lt);
-				Lt = new lit(2*j);
-				literals.push_back(Lt);
-			}
+	pc->cl = cl;
 
+	//Create only the required Literals.
+	if(lim > literals.size()/2)
+	{
+		for(j = literals.size()/2 + 1; j <= lim; j++)
+		{
+			Lt = new lit(2*j-1);
+			literals.push_back(Lt);
+			Lt = new lit(2*j);
+			literals.push_back(Lt);
 		}
+	}
+
+	/*for(i = 0; i < size; i++)
+	{
+		cout<< larray.at(i) << "..";
+	}
+	cout<<"\n";*/
+
+
+	for(i = 0; i < size; i++)
+	{
+		l = abs(larray.at(i));
+
+		if(i < size-1)
+		{
+			if(larray.at(i) == larray.at(i+1)) continue;
+		}
+
 		//make clause
-		if(larray[i] < 0)
+		if(larray.at(i) < 0)
 		{
 			cl->list.push_back(2*l-1);
 			literals.at(2*l-1)->pc.push_back(pc);
 		}
-		if(larray[i] > 0)
-
+		if(larray.at(i) > 0)
 		{
 			cl->list.push_back(2*l);
 			literals.at(2*l)->pc.push_back(pc);
-
 		}
-
-		i++;
-
 	}
 
 	pc->UAcount = cl->list.size();
-	//sort cl;
 	clauses.push_back(pc);
+
 	return 0;
-
 }
-
 
 int parsefile(string filename)
 {
 	char c;
 	int i=0;
-	int rlits[1000];
 	int n_clauses;
 	int n_lits;
+	vector<int> rlits;
 
 	ifstream infile(filename.c_str());
 	if(infile.is_open())
@@ -143,14 +172,12 @@ int parsefile(string filename)
 		{
 			if(c == '0')
 			{
-				rlits[i] = 0;
 				addclause(rlits);
-				i = 0;
-
+				rlits.clear();
 			}
 			else
 			{
-				rlits[i++] = getint(&infile,&c);
+				rlits.push_back(getint(&infile,&c));
 			}
 		}
 
@@ -159,7 +186,7 @@ int parsefile(string filename)
 	}
 	else
 	{
-		cout << "file not openable" << endl;
+		cout << "ERROR!! File cannot be opened." << endl;
 		return -1;
 	}
 
