@@ -1,0 +1,56 @@
+int addconflictclause(vector<int> larray)
+{
+	p_clause * pc;
+	clause	 * cl;
+	int size;
+	int i, l;
+	int count;
+
+	size = larray.size();
+	count = 0;
+
+ 	//sort(larray.begin(), larray.end());
+
+ 	for(i = 0; i < size-1; i++)
+	{
+		if(larray.at(i) % 2 == 1)
+		{
+			if(larray.at(i)+1 == larray.at(i+1))
+			{
+				//Clause is redundant.
+				cout<<"ERROR!! Conflict clause is invalid!!\n";
+				exit(0);
+			}
+		}
+	}
+
+	pc = new p_clause(false);
+
+	//make clause
+	cl = new clause;
+	pc->cl = cl;
+
+	/*for(i = 0; i < size; i++)
+	{
+		cout<< larray.at(i) << "..";
+	}
+	cout<<"\n";*/
+
+
+	for(i = 0; i < size; i++)
+	{
+		l = larray.at(i);
+
+		if(!literals.at(l)->assign) count++;
+
+		//make clause
+		cl->list.push_back(l);
+		literals.at(l)->pc.push_back(pc);
+	}
+
+	pc->UAcount = count; //TBD
+	pc->learnt = true;
+	clauses.push_back(pc);
+
+	return 0;
+}
