@@ -8,44 +8,54 @@
 #include<iostream>
 #include<string.h>
 #include<stdio.h>
+#include<vector>
 using namespace std;
 
-void parsefile(string filename)
+int parsefile(string filename)
 {
-	fpos_t pos;
 	bool readNumbers;
 	int num;
 	int nClauses;
 	int nVars;
-	char c[10];
+	char c1;
+	char c[4];
 	char buf[100];
-	string str;
+	string str = "cnf";
+	vector<int> rlits;
 
 	FILE* fin;
 	fin = fopen(filename.c_str(), "r");
+	/*if(fin == NULL)
+	{
+		cout<<"ERROR!!! Opening the file\n";
+		return -1;
+	}*/
 
 	readNumbers = false;
 
 	cout<<"Reading from file!!\n";
+
 	while(!feof(fin))
 	{
 		if(readNumbers == false)
 		{
-			fgetpos(fin, &pos);
-			fscanf(fin, "%s", c);
-			str = (string) c;
-			if(!str.compare("c"))
+			c1 = (char) fgetc(fin);
+			if(c1 == ' ' || c1 == '\n')
 			{
+				continue;
+			}
+
+			if(c1 == 'c')
+			{
+				fseek(fin, -1, SEEK_CUR);
 				fgets(buf, 100, fin);
 			}
 			else
 			{
-				if(!str.compare("p"))
+				if(c1 == 'p')
 				{
 					fscanf(fin, "%s", c);
-					str.clear();
-					str = (string) c;
-					if(!str.compare("cnf"))
+					if(!str.compare(c))
 					{
 						fscanf(fin, "%d", &nClauses);
 						fscanf(fin, "%d", &nVars);
@@ -54,25 +64,39 @@ void parsefile(string filename)
 				else
 				{
 					readNumbers = true;
-					fsetpos(fin, &pos);
+					fseek(fin, -1, SEEK_CUR);
 					fscanf(fin, "%d", &num);
-					printf("..%d..", num);
+
+					if(num != 0)
+					{
+						rlits.push_back(num);
+					}
+					else
+					{
+						fseek(fin, -1, SEEK_CUR);
+						fgets(buf, 100, fin);
+					}
 				}
 			}
-			str.clear();
 		}
 		else
 		{
 			fscanf(fin, "%d", &num);
-			printf("%d..", num);
 			if(num == 0)
 			{
-				cout << " Add to clauses here\n";
+				addclause(rlits);
+				rlits.clear();
 				readNumbers = false;
+			}
+			else
+			{
+				rlits.push_back(num);
 			}
 		}
 	}
 	fclose(fin);
+
+	return 0;
 }
 
 
