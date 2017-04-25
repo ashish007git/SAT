@@ -2,6 +2,9 @@ Implement decision level to each of the free decisions.
 When multiple conflict clauses are identified, choose the pair with lowest level of decision level.
 Atleast one of the literal in the conflict clause is the current decision literal (forced/free).
 
+The first conflict identified at current decision level in the tree assures that,
+non chronological backtrack jumps to the lowest decision level.
+
 For variables assignments data structure,
 Array of n variables,
 -1 : Unassigned
