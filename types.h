@@ -54,6 +54,16 @@ namespace SAT{
 	} lit;
 
 
+	typedef struct f_clause{
+	lit * fd;
+	clause * fcl;
+	
+	f_clause(lit * fd, clause *fcl):fd(fd), fcl(fcl){}
+
+	~f_clause(){}
+
+	} f_clause;
+
 	vector<lit*> literals;
 	vector<p_clause*> clauses;
 
