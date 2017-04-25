@@ -131,16 +131,74 @@ bool evalUNSATclauses(lit * a, queue<f_clause*> *b, clause * ccl)
 	return true;
 }
 
+clause * resolution(clause * a, clause * b, int d)
+{
+	int i,j,k;
+	clause * cl = new clause;
+
+	j = 0;
+	k = 0;
+
+	for(i = 0; i <= a->list.size()+b->list.size(); i++)
+	{
+		if(a->list.at(j) == b->list.at(k))
+		{
+			cl->list.push_back(a->list.at(j));
+			j++;
+			k++;
+		}
+
+		if( ( a->list.at(j) < b->list.at(k)) && j < a->list.size())
+		{
+				cl->list.push_back(a->list.at(j++));
+		}
+		else if(k < b->list.size())
+		{
+				cl->list.push_back(b->list.at(k++));
+		}
+
+		if( (b->list.at(j) < a->list.at(k) )  && k < b->list.size())
+		{
+				cl->list.push_back(b->list.at(k++));
+		}
+		else if(j < a->list.size())
+		{
+				cl->list.push_back(a->list.at(j++));
+		}
+
+	}
+
+	for(i = 0; i < cl->list.size(); i++)
+	{
+		if(d%2 == 0)
+		{
+			if(cl->list.at(i) == d)
+				cl->list.erase(cl->list.begin() + i);
+				cl->list.erase(cl->list.begin() + i-1);
+		}
+		else
+		{
+			if(cl->list.at(i) == d)
+				cl->list.erase(cl->list.begin() + i);
+				cl->list.erase(cl->list.begin() + i);
+		}
+	}
+
+	return cl;
+
+}
+
 //Learn clause and add it..
 clause * learnconflict(clause * a, clause * b, int d)
 {
 
 	clause * lc;
-	int j,k;
-	//Addclause code
 
-	//
-//	addlearntclause(lc);
+	lc = resolution(a, b, d);
+	//Form conflict clause
+//	addconflictclause(lc);
+
+
 
 	return lc;
 
