@@ -69,6 +69,64 @@ void Undo(lit * a)
 	return;
 }
 
+int addconflictclause(vector<int> &larray)
+{
+	p_clause * pc;
+	clause	 * cl;
+	int size;
+	int i, l;
+	int count;
+
+	size = larray.size();
+	count = 0;
+
+ 	//sort(larray.begin(), larray.end());
+
+ 	for(i = 0; i < size-1; i++)
+	{
+		if(larray.at(i) % 2 == 1)
+		{
+			if(larray.at(i)+1 == larray.at(i+1))
+			{
+				//Clause is redundant.
+				cout<<"ERROR!! Conflict clause is invalid!!\n";
+				exit(0);
+			}
+		}
+	}
+
+	pc = new p_clause(false);
+
+	//make clause
+	cl = new clause;
+	pc->cl = cl;
+
+	/*for(i = 0; i < size; i++)
+	{
+		cout<< larray.at(i) << "..";
+	}
+	cout<<"\n";*/
+
+
+	for(i = 0; i < size; i++)
+	{
+		l = larray.at(i);
+
+		if(!literals.at(l)->assign) count++;
+
+		//make clause
+		cl->list.push_back(l);
+		literals.at(l)->pc.push_back(pc);
+	}
+
+	pc->UAcount = count; //TBD
+	pc->learnt = true;
+	clauses.push_back(pc);
+
+	return 0;
+}
+
+
 //Find Forced decisions
 f_clause * findforceddecision(clause* cl)
 {
@@ -103,7 +161,7 @@ bool evalSATclauses(lit * a)
 
 
 //evaluate UNSAT clauses.
-bool evalUNSATclauses(lit * a, queue<f_clause*> *b, clause * ccl)
+bool evalUNSATclauses(lit * a, queue<f_clause*> *b, clause * &ccl)
 {
 
 	int i ;
@@ -139,51 +197,71 @@ clause * resolution(clause * a, clause * b, int d)
 	j = 0;
 	k = 0;
 
-	for(i = 0; i <= a->list.size()+b->list.size(); i++)
+	for(i = 0; i < a->list.size()+b->list.size(); i++)
 	{
-		if(a->list.at(j) == b->list.at(k))
+
+		if(j < a->list.size() && k < b->list.size())
 		{
-			cl->list.push_back(a->list.at(j));
-			j++;
-			k++;
+
+			if(b->list.at(k) == d)
+			{
+				k++;
+				continue;
+			}
+			if(a->list.at(j) == (d-1) + 2*(d%2))
+			{
+				j++;
+				continue;
+			}
+			
+			if(a->list.at(j) == b->list.at(k))
+			{
+				cl->list.push_back(a->list.at(j));
+				j++;
+				k++;
+			}
+
+			else if(  a->list.at(j) < b->list.at(k))
+			{
+					cl->list.push_back(a->list.at(j++));
+			}
+
+
+			else if( b->list.at(j) < a->list.at(k) )
+			{
+					cl->list.push_back(b->list.at(k++));
+
+			}
 		}
 
-		if( ( a->list.at(j) < b->list.at(k)) && j < a->list.size())
+		else if ( k >= b->list.size() && j < a->list.size())
 		{
-				cl->list.push_back(a->list.at(j++));
+			if(a->list.at(j) == (d-1) + 2*(d%2))
+			{
+				j++;
+				continue;
+			}
+			cl->list.push_back(a->list.at(j++));
 		}
-		else if(k < b->list.size())
+		else if ( j >= a->list.size() && k < b->list.size())
 		{
-				cl->list.push_back(b->list.at(k++));
-		}
-
-		if( (b->list.at(j) < a->list.at(k) )  && k < b->list.size())
-		{
-				cl->list.push_back(b->list.at(k++));
-		}
-		else if(j < a->list.size())
-		{
-				cl->list.push_back(a->list.at(j++));
+			if(b->list.at(k) == d)
+			{
+				k++;
+				continue;
+			}
+			cl->list.push_back(b->list.at(k++));
 		}
 
 	}
+
 
 	for(i = 0; i < cl->list.size(); i++)
 	{
-		if(d%2 == 0)
-		{
-			if(cl->list.at(i) == d)
-				cl->list.erase(cl->list.begin() + i);
-				cl->list.erase(cl->list.begin() + i-1);
-		}
-		else
-		{
-			if(cl->list.at(i) == d)
-				cl->list.erase(cl->list.begin() + i);
-				cl->list.erase(cl->list.begin() + i);
-		}
+		cout << cl->list.at(i)<< " ";
 	}
 
+	cout << endl;
 	return cl;
 
 }
@@ -196,10 +274,10 @@ clause * learnconflict(clause * a, clause * b, int d)
 
 	lc = resolution(a, b, d);
 	//Form conflict clause
-//	addconflictclause(lc);
+	addconflictclause(lc->list);
 
 
-
+//	return NULL;
 	return lc;
 
 }
@@ -208,11 +286,11 @@ clause * learnconflict(clause * a, clause * b, int d)
 bool impdecision(int d, clause * cl)
 {
 	int i;
-	if(cl == NULL) return false;
+	if(cl == NULL) return true;
 
 	for( i = 0; i < cl->list.size(); i++)
 	{
-		if(d == cl->list.at(i)) return true;
+		if( (d -1 + 2*(d%2)) == cl->list.at(i)) return true;
 
 	}
 	return false;
@@ -239,7 +317,7 @@ bool Solve(){
 		stack<lit*> S;
 		queue<f_clause*> Q;
 		bool backtrack = false;
-		clause * ccl;
+		clause * ccl = NULL;
 		clause * fcl;
 
 		cout << "Started solving" << endl;
@@ -298,6 +376,8 @@ bool Solve(){
 					//Learnt conflict clause is to be added to clauses - TBD
 					backtrack =  true;
 
+					cout << "C " << ccl->list.size() << " " << fcl->list.size() << endl;
+
 					//Learn conflict clause:
 					ccl = learnconflict(ccl, fcl, temp->id);
 
@@ -324,6 +404,7 @@ bool Solve(){
 				if(temp->forced == false && temp->visited == false && impdecision(temp->id,ccl))
 				{
 					backtrack = false;
+					ccl = NULL;
 					Undo(temp); //FF
 
 					//Reset flags in Lit
