@@ -2,8 +2,8 @@ Compromise in picking only the first free decision literal. Choose this literal 
 clauses. This will help when the whole search tree with the complemented literal results in conflicts. Then, we can backtrack into the
 search tree with true form and thereby discard (delete) maximum number of clauses as they now become satisfied.
 
-A 0-1 matrix for Parent-child relation for free vs forced decision. A column corresponding to a literal (at any instant) would give all
-the free decisions ONLY that led to this focrced decision being discovered. For every forced decision made, look at all other literals in
+A 0-1 matrix for Parent-child relation for free vs forced decision. A column corresponding to a literal (at any instant) would give ONLY 
+all the free decisions that led to this focrced decision being discovered. For every forced decision made, look at all other literals in
 the clause. If forced decision literal, bitwise OR the corresponding column, otherwise, write a 1 in the corresponding forced decision
 literal column.
 
