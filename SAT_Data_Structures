@@ -1,3 +1,8 @@
+A 0-1 matrix for Parent-child relation for free vs forced decision. A column corresponding to a literal (at any instant) would give all
+the free decisions ONLY that led to this focrced decision being discovered. For every forced decision made, look at all other literals in
+the clause. If forced decision literal, bitwise OR the corresponding column, otherwise, write a 1 in the corresponding forced decision
+literal column.
+
 Implement decision level to each of the free decisions.
 When multiple conflict clauses are identified, choose the pair with lowest level of decision level.
 Atleast one of the literal in the conflict clause is the current decision literal (forced/free).
