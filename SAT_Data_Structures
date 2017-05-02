@@ -1,3 +1,5 @@
+Prioritize conflict clauses with less literals than conflict clauses with more literals.
+
 Compromise in picking only the first free decision literal. Choose this literal such that its true form appears in maximum number of 
 clauses. This will help when the whole search tree with the complemented literal results in conflicts. Then, we can backtrack into the
 search tree with true form and thereby discard (delete) maximum number of clauses as they now become satisfied.
