@@ -66,12 +66,24 @@ void Undo(lit * a)
 			temp->pc.at(i)->UAcount++;
 	}
 
+	//For learnt clauses
+	for(i = 0; i < a->lc.size(); i++)
+	{
+		a->lc.at(i)->Scount--;
+	}
+
+	for(i = 0; i < temp->lc.size(); i++)
+	{
+		if(temp->lc.at(i)->Scount == 0)
+			temp->lc.at(i)->UAcount++;
+	}
+
 	return;
 }
 
 int addconflictclause(vector<int> &larray)
 {
-	p_clause * pc;
+	p_clause * lc;
 	clause	 * cl;
 	int size;
 	int i, l;
@@ -95,11 +107,11 @@ int addconflictclause(vector<int> &larray)
 		}
 	}
 
-	pc = new p_clause(false);
+	lc = new p_clause();
 
 	//make clause
 	cl = new clause;
-	pc->cl = cl;
+	lc->cl = cl;
 
 	/*for(i = 0; i < size; i++)
 	{
@@ -116,12 +128,11 @@ int addconflictclause(vector<int> &larray)
 
 		//make clause
 		cl->list.push_back(l);
-		literals.at(l)->pc.push_back(pc);
+		literals.at(l)->lc.push_back(lc);
 	}
 
-	pc->UAcount = count; //TBD
-	pc->learnt = true;
-	clauses.push_back(pc);
+	lc->UAcount = count; //TBD
+	lclauses.push_back(lc);
 
 	return 0;
 }
@@ -156,6 +167,11 @@ bool evalSATclauses(lit * a)
 	{
 		a->pc.at(i)->Scount++;
 	}
+	//Learnt
+	for(i = 0; i < a->lc.size(); i++)
+	{
+		a->lc.at(i)->Scount++;
+	}
 	return true;
 }
 
@@ -168,6 +184,29 @@ bool evalUNSATclauses(lit * a, queue<f_clause*> *b, clause * &ccl)
 	lit * temp;
 	f_clause* forced;
 	temp = getcomp(a);
+
+	//Learnt clauses
+	for(i = 0; i < temp->lc.size(); i++)
+	{
+		if(temp->lc.at(i)->Scount == 0)
+		{
+			temp->lc.at(i)->UAcount--;
+			if(temp->lc.at(i)->UAcount == 1)
+			{
+				//Find forced decision and insert into queue.
+				forced = findforceddecision(temp->lc.at(i)->cl);
+				b->push(forced);
+			}
+			if(temp->lc.at(i)->UAcount == 0) //Unresolved clause, all literals assigned => UNSAT clause.
+				{
+					ccl = temp->lc.at(i)->cl;
+					return false;
+				}
+			}
+	}
+
+
+	//Original Set.
 	for(i = 0; i < temp->pc.size(); i++)
 	{
 		if(temp->pc.at(i)->Scount == 0)

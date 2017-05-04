@@ -11,7 +11,7 @@ namespace SAT{
 	typedef struct clause{
 
 		vector<int> list;
-
+		
 		clause(){}
 
 		~clause(){
@@ -22,14 +22,13 @@ namespace SAT{
 	typedef struct p_clause{
 
 		int status;
-		bool learnt;
 		int Scount;
 		int UAcount;
 		clause * cl;
 
-		p_clause( bool learnt):status(0), learnt(learnt),Scount(0),UAcount(0){}
+		p_clause():status(0), Scount(0),UAcount(0){}
 
-		//Need a function to clear cl
+		//Need a function to clear cl		
 
 		~p_clause(){ }
 
@@ -43,21 +42,22 @@ namespace SAT{
 		bool assign;
 		bool forced;
 		bool visited;
-		vector<p_clause*> pc;
-
+		vector<p_clause*> pc;	
+		vector<p_clause*> lc;
+		
 		lit(int id):val(false),id(id),assign(false),forced(false),visited(false){}
-
-		~lit(){
+		
+		~lit(){	
 			pc.clear();
 		}
-
+		
 	} lit;
 
 
 	typedef struct f_clause{
 	lit * fd;
 	clause * fcl;
-
+	
 	f_clause(lit * fd, clause *fcl):fd(fd), fcl(fcl){}
 
 	~f_clause(){}
@@ -66,6 +66,7 @@ namespace SAT{
 
 	vector<lit*> literals;
 	vector<p_clause*> clauses;
+	vector<p_clause*> lclauses;
 
 	void initiate_literals(){
 		lit * lt;

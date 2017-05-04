@@ -49,7 +49,7 @@ int addclause(int *larray)
 
 	i = 0;
 
-	pc = new p_clause(false);
+	pc = new p_clause();
 	
 	//make clause
 	cl = new clause;
@@ -88,7 +88,6 @@ int addclause(int *larray)
 	}
 
 	pc->UAcount = cl->list.size();
-	//sort cl;
 	clauses.push_back(pc);
 	return 0;
 
