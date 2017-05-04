@@ -1,3 +1,5 @@
+Use bool variable instead of integer variable for most of the flags except the counts. This is considerable reduction in memory usage.
+
 Evaluate the original function clauses (not learnt) to test satisifiability first. If all the non-learnt clauses are satisfied, no need
 to evaluate learnt clauses for checking the satisfiability. Is this functionally correct approach?
 
