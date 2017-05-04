@@ -1,3 +1,6 @@
+Evaluate the original function clauses (not learnt) to test satisifiability first. If all the non-learnt clauses are satisfied, no need
+to evaluate learnt clauses for checking the satisfiability. Is this functionally correct approach?
+
 Prioritize conflict clauses with less literals than conflict clauses with more literals.
 
 Compromise in picking only the first free decision literal. Choose this literal such that its true form appears in maximum number of 
