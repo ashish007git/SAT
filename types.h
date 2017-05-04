@@ -30,14 +30,16 @@ namespace SAT{
 
 		//Need a function to clear cl		
 
-		~p_clause(){ }
+		~p_clause(){
+			delete cl;
+		 }
 
 	} p_clause;
 
 
 	//Datastructure for quicker decision making.
 	typedef struct lit{
-		bool val;
+		int vsid;
 		int id;
 		bool assign;
 		bool forced;
@@ -45,10 +47,11 @@ namespace SAT{
 		vector<p_clause*> pc;	
 		vector<p_clause*> lc;
 		
-		lit(int id):val(false),id(id),assign(false),forced(false),visited(false){}
+		lit(int id):vsid(0),id(id),assign(false),forced(false),visited(false){}
 		
 		~lit(){	
 			pc.clear();
+			lc.clear();
 		}
 		
 	} lit;
@@ -67,6 +70,7 @@ namespace SAT{
 	vector<lit*> literals;
 	vector<p_clause*> clauses;
 	vector<p_clause*> lclauses;
+	int resetvsid;
 
 	void initiate_literals(){
 		lit * lt;

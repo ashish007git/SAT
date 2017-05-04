@@ -4,6 +4,7 @@
 #include<vector>
 #include<stdlib.h>
 #include"types.h"
+#include<algorithm>
 
 using namespace std;
 using namespace SAT;
@@ -87,6 +88,7 @@ int addclause(int *larray)
 
 	}
 
+	sort(cl->list.begin(), cl->list.end());
 	pc->UAcount = cl->list.size();
 	clauses.push_back(pc);
 	return 0;

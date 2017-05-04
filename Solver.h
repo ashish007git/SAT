@@ -1,5 +1,6 @@
 #include <stack>
 #include <queue>
+#include <algorithm>
 
 using namespace SAT;
 using namespace std;
@@ -13,8 +14,7 @@ lit * getcomp(lit * a)
 		cout<< "Invalid variable to get comp" << endl;
 		return NULL;
 	}
-	if(a->id%2 == 0) return literals.at(a->id-1);
-	else return literals.at(a->id+1);
+	return literals.at(a->id-1 + 2*(a->id%2));
 
 }
 
@@ -30,22 +30,58 @@ lit * firstdecision(){
 
 }
 
+//Update vsid
+bool updatevsid(clause * cl)
+{
+	for(int i = 0; i < cl->list.size(); i++)
+	{
+		literals.at(cl->list.at(i))->vsid++;
+	}
+
+	resetvsid++;
+	if(resetvsid == 50)
+	{
+		for(int i = 0; i < literals.size(); i++)
+		{
+			literals.at(i)->vsid /= 4;
+		}
+		resetvsid = 0;
+	}
+
+	return true;
+}
+
 //Assign next unassigned literal.
 lit * branchdecision(lit * temp){
+	
+
+	int mvsid = -1;
+	int mid = 0;
+
+	for(int i = 1; i < literals.size(); i++)
 	{
-		for(int i = 1; i < literals.size(); i = i+2)
+		temp = literals.at(i);
+		if(temp->assign == false)
 		{
-			temp = literals.at(i);
-			if(temp->assign == false)
+			if(mvsid < temp->vsid)
 			{
-				temp->assign = true;
-				getcomp(temp)->assign = true;
-				return temp;
+				mvsid = temp->vsid;
+				mid   = temp->id;
 			}
 		}
 	}
-	return NULL;
+	
+
+	if(!mid) return NULL;
+	else 
+	{
+		literals.at(mid)->assign = true;
+		getcomp(literals.at(mid))->assign = true;
+		cout << "A " << mid << endl;	
+		return literals.at(mid);
+	}
 }
+
 
 
 //Undo changes
@@ -54,6 +90,7 @@ void Undo(lit * a)
 	int i;
 	lit * temp;
 	temp = getcomp(a);
+	cout << "U " << a->id << endl;
 
 	for(i = 0; i < a->pc.size(); i++)
 	{
@@ -137,6 +174,48 @@ int addconflictclause(vector<int> &larray)
 	return 0;
 }
 
+//Remove conflict clause
+bool removelc(int id, p_clause * lc)
+{
+
+	vector<p_clause*>::iterator it;
+
+	it = find(literals.at(id)->lc.begin(), literals.at(id)->lc.end(), lc);
+
+	if(it != literals.at(id)->lc.end())
+	{
+		literals.at(id)->lc.erase(it);
+		return true;
+	}
+
+	return false;
+}
+
+bool removeconflictclause(p_clause * lc)
+{
+	clause * cl;
+	cl = lc->cl;
+	
+	for (int i = 0; i < cl->list.size(); i++)
+	{
+		removelc(cl->list.at(i),lc);
+	}
+
+	//remove from lclauses
+	vector<p_clause*>::iterator it;
+
+	it = find(lclauses.begin(), lclauses.end(),lc);
+
+	if(it != lclauses.end())
+	{
+		lclauses.erase(it);
+	}
+	else return false;
+
+	delete lc;
+
+	return true;
+}
 
 //Find Forced decisions
 f_clause * findforceddecision(clause* cl)
@@ -149,8 +228,10 @@ f_clause * findforceddecision(clause* cl)
 		temp = literals.at(cl->list.at(i));
 		if( !temp->assign)
 		{
+
 			fc = new f_clause(temp,cl);
 			return fc;
+			
 		}
 	}
 
@@ -185,17 +266,41 @@ bool evalUNSATclauses(lit * a, queue<f_clause*> *b, clause * &ccl)
 	f_clause* forced;
 	temp = getcomp(a);
 
-	//Learnt clauses
+
+	//Bug fix - UAcount for all clauses are to be updated for proper undo.
 	for(i = 0; i < temp->lc.size(); i++)
 	{
 		if(temp->lc.at(i)->Scount == 0)
 		{
 			temp->lc.at(i)->UAcount--;
+		}
+	
+	} 
+
+	//Bug fix - UAcount for all clauses are to be updated for proper undo.
+	for(i = 0; i < temp->pc.size(); i++)
+	{
+		if(temp->pc.at(i)->Scount == 0)
+		{
+			temp->pc.at(i)->UAcount--;
+		}
+	
+	} 
+
+	//Learnt clauses
+	for(i = 0; i < temp->lc.size(); i++)
+	{
+		if(temp->lc.at(i)->Scount == 0)
+		{
 			if(temp->lc.at(i)->UAcount == 1)
 			{
 				//Find forced decision and insert into queue.
-				forced = findforceddecision(temp->lc.at(i)->cl);
-				b->push(forced);
+				forced = findforceddecision(temp->pc.at(i)->cl);
+				if(!forced->fd->forced)
+				{
+					forced->fd->forced = true;
+					b->push(forced);
+				}
 			}
 			if(temp->lc.at(i)->UAcount == 0) //Unresolved clause, all literals assigned => UNSAT clause.
 				{
@@ -211,19 +316,22 @@ bool evalUNSATclauses(lit * a, queue<f_clause*> *b, clause * &ccl)
 	{
 		if(temp->pc.at(i)->Scount == 0)
 		{
-			temp->pc.at(i)->UAcount--;
 			if(temp->pc.at(i)->UAcount == 1)
 			{
 				//Find forced decision and insert into queue.
 				forced = findforceddecision(temp->pc.at(i)->cl);
-				b->push(forced);
-			}
-			if(temp->pc.at(i)->UAcount == 0) //Unresolved clause, all literals assigned => UNSAT clause.
+				if(!forced->fd->forced)
 				{
-					ccl = temp->pc.at(i)->cl;
-					return false;
+					forced->fd->forced = true;
+					b->push(forced);
 				}
 			}
+			if(temp->pc.at(i)->UAcount == 0) //Unresolved clause, all literals assigned => UNSAT clause.
+			{
+				ccl = temp->pc.at(i)->cl;
+				return false;
+			}
+		}
 	}
 	return true;
 }
@@ -295,11 +403,15 @@ clause * resolution(clause * a, clause * b, int d)
 	}
 
 
-	for(i = 0; i < cl->list.size(); i++)
+	for(i = 0; i < a->list.size(); i++)
 	{
-		cout << cl->list.at(i)<< " ";
+		cout << a->list.at(i)<< " ";
 	}
 
+	for(i = 0; i < b->list.size(); i++)
+	{
+		cout << b->list.at(i)<< " ";
+	}
 	cout << endl;
 	return cl;
 
@@ -312,8 +424,10 @@ clause * learnconflict(clause * a, clause * b, int d)
 	clause * lc;
 
 	lc = resolution(a, b, d);
-	//Form conflict clause
-	addconflictclause(lc->list);
+
+//	updatevsid(lc);
+	//Form conflict clause 
+//	addconflictclause(lc->list);
 
 
 //	return NULL;
@@ -324,6 +438,7 @@ clause * learnconflict(clause * a, clause * b, int d)
 //Check if the decision is related to conflict
 bool impdecision(int d, clause * cl)
 {
+/*
 	int i;
 	if(cl == NULL) return true;
 
@@ -333,6 +448,9 @@ bool impdecision(int d, clause * cl)
 
 	}
 	return false;
+*/
+
+	return true;
 }
 
 bool checkSAT()
@@ -422,10 +540,11 @@ bool Solve(){
 
 					while(!Q.empty())
 						{
+							Q.front()->fd->forced = false;
 							delete Q.front();
 							Q.pop(); //Empty queue upon conflicts.
 						}
-
+/*
 					//Backtracking the current assignment immediately.
 					Undo(temp);
 
@@ -434,8 +553,8 @@ bool Solve(){
 					temp->forced  = false;
 					temp->assign = false;
 					getcomp(temp)->assign = false;
-					S.pop();
-				}
+					S.pop(); */
+				} 
 			}
 			else    //Backtrack or Undo.
 			{
@@ -471,6 +590,8 @@ bool Solve(){
 				}
 			}
 		}
+
+
 
 	return false;
 }
