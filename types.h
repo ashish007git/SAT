@@ -71,6 +71,23 @@ namespace SAT{
 	vector<p_clause*> clauses;
 	vector<p_clause*> lclauses;
 	int resetvsid;
+	int ** imparr;
+
+	void initiateimparr()
+	{
+
+	imparr = new int*[literals.size()];
+	for (int i = 0 ; i < literals.size(); i++)
+	{
+		imparr[i] = new int[literals.size()];
+		for(int j = 0 ; j < literals.size(); j++)
+		{
+			imparr[i][j] = 0;
+		}
+	}
+	return;
+	}
+
 
 	void initiate_literals(){
 		lit * lt;
@@ -79,6 +96,8 @@ namespace SAT{
 		return;
 
 		}
+
+	
 
 
 };

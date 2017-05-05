@@ -1,22 +1,11 @@
 #include <stack>
 #include <queue>
 #include <algorithm>
+#include "utils.h"
 
 using namespace SAT;
 using namespace std;
 
-//Get complement of give literal
-lit * getcomp(lit * a)
-{
-
-	if(a->id == 0)
-	{
-		cout<< "Invalid variable to get comp" << endl;
-		return NULL;
-	}
-	return literals.at(a->id-1 + 2*(a->id%2));
-
-}
 
 
 //To make first decison
@@ -113,6 +102,12 @@ void Undo(lit * a)
 	{
 		if(temp->lc.at(i)->Scount == 0)
 			temp->lc.at(i)->UAcount++;
+	}
+
+	if(a->forced)
+	{
+		undoimparr(a->id);
+		undoimparr(temp->id);
 	}
 
 	return;
@@ -230,6 +225,15 @@ f_clause * findforceddecision(clause* cl)
 		{
 
 			fc = new f_clause(temp,cl);
+/*
+
+			for(i = 0; i < cl->list.size(); i++)
+			{
+				cout << cl->list.at(i)<< " ";
+			}
+			cout << endl;
+
+*/
 			return fc;
 			
 		}
@@ -303,11 +307,12 @@ bool evalUNSATclauses(lit * a, queue<f_clause*> *b, clause * &ccl)
 				}
 			}
 			if(temp->lc.at(i)->UAcount == 0) //Unresolved clause, all literals assigned => UNSAT clause.
-				{
-					ccl = temp->lc.at(i)->cl;
-					return false;
-				}
+			{
+				ccl = temp->lc.at(i)->cl;
+				updateimparr(temp->id+ 2*(temp->id%2) -1,ccl);
+				return false;
 			}
+		}
 	}
 
 
@@ -329,6 +334,16 @@ bool evalUNSATclauses(lit * a, queue<f_clause*> *b, clause * &ccl)
 			if(temp->pc.at(i)->UAcount == 0) //Unresolved clause, all literals assigned => UNSAT clause.
 			{
 				ccl = temp->pc.at(i)->cl;
+/*
+
+				for(i = 0; i < ccl->list.size(); i++)
+				{
+					cout << ccl->list.at(i)<< " ";
+				}
+				cout << endl;
+*/
+
+				updateimparr(temp->id +2*((temp->id)%2)-1,ccl);
 				return false;
 			}
 		}
@@ -336,6 +351,8 @@ bool evalUNSATclauses(lit * a, queue<f_clause*> *b, clause * &ccl)
 	return true;
 }
 
+
+/*
 clause * resolution(clause * a, clause * b, int d)
 {
 	int i,j,k;
@@ -416,6 +433,7 @@ clause * resolution(clause * a, clause * b, int d)
 	return cl;
 
 }
+*/
 
 //Learn clause and add it..
 clause * learnconflict(clause * a, clause * b, int d)
@@ -423,8 +441,14 @@ clause * learnconflict(clause * a, clause * b, int d)
 
 	clause * lc;
 
-	lc = resolution(a, b, d);
+	lc = impconflictclause(d);
 
+
+	for(int i = 0; i < lc->list.size(); i++)
+	{
+		cout << lc->list.at(i)<< " ";
+	}
+	cout << endl;
 //	updatevsid(lc);
 	//Form conflict clause 
 //	addconflictclause(lc->list);
@@ -438,7 +462,7 @@ clause * learnconflict(clause * a, clause * b, int d)
 //Check if the decision is related to conflict
 bool impdecision(int d, clause * cl)
 {
-/*
+
 	int i;
 	if(cl == NULL) return true;
 
@@ -448,9 +472,9 @@ bool impdecision(int d, clause * cl)
 
 	}
 	return false;
-*/
 
-	return true;
+
+//	return true;
 }
 
 bool checkSAT()
@@ -511,6 +535,8 @@ bool Solve(){
 					{
 						temp = Q.front()->fd;
 						fcl  = Q.front()->fcl;
+						updateimparr(temp->id + 2*(temp->id%2) -1,fcl);
+						cout << "F " << temp->id << endl;
 						delete Q.front();
 						Q.pop();
 						{
@@ -564,7 +590,7 @@ bool Solve(){
 					backtrack = false;
 					ccl = NULL;
 					Undo(temp); //FF
-
+					
 					//Reset flags in Lit
 					temp->visited = false;
 					temp->forced  = false;
@@ -572,6 +598,7 @@ bool Solve(){
 
 					temp = getcomp(temp); //FF
 					temp->visited = true;
+					cout << "B " << temp->id << endl;
 					S.push(temp);
 
 				}
