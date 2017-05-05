@@ -1,3 +1,4 @@
+#include <algorithm> 
 
 using namespace SAT;
 using namespace std;
@@ -51,5 +52,89 @@ clause * impconflictclause(int id)
 			cl->list.push_back(i);
 	}
 	
+	sort(cl->list.begin(),cl->list.end());
 	return cl;
 }
+
+/*
+clause * resolution(clause * a, clause * b, int d)
+{
+	int i,j,k;
+	clause * cl = new clause;
+
+	j = 0;
+	k = 0;
+
+	for(i = 0; i < a->list.size()+b->list.size(); i++)
+	{
+
+		if(j < a->list.size() && k < b->list.size())
+		{
+
+			if(b->list.at(k) == d)
+			{
+				k++;
+				continue;
+			}
+			if(a->list.at(j) == (d-1) + 2*(d%2))
+			{
+				j++;
+				continue;
+			}
+			
+			if(a->list.at(j) == b->list.at(k))
+			{
+				cl->list.push_back(a->list.at(j));
+				j++;
+				k++;
+			}
+
+			else if(  a->list.at(j) < b->list.at(k))
+			{
+					cl->list.push_back(a->list.at(j++));
+			}
+
+
+			else if( b->list.at(j) < a->list.at(k) )
+			{
+					cl->list.push_back(b->list.at(k++));
+
+			}
+		}
+
+		else if ( k >= b->list.size() && j < a->list.size())
+		{
+			if(a->list.at(j) == (d-1) + 2*(d%2))
+			{
+				j++;
+				continue;
+			}
+			cl->list.push_back(a->list.at(j++));
+		}
+		else if ( j >= a->list.size() && k < b->list.size())
+		{
+			if(b->list.at(k) == d)
+			{
+				k++;
+				continue;
+			}
+			cl->list.push_back(b->list.at(k++));
+		}
+
+	}
+
+
+	for(i = 0; i < a->list.size(); i++)
+	{
+		cout << a->list.at(i)<< " ";
+	}
+
+	for(i = 0; i < b->list.size(); i++)
+	{
+		cout << b->list.at(i)<< " ";
+	}
+	cout << endl;
+	return cl;
+
+}
+*/
