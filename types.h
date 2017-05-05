@@ -19,8 +19,17 @@ namespace SAT{
 	enum Solver_t {CBCP, NCBCP, NHCL, HCL};
 	Solver_t mySolver = NHCL;
 
+	/*
+	 *  OFF => Basic print messages and Errors.
+	 *
+	 *  LOW => Literal decisions, SAT assignment (if any).
+	 *
+	 *  MED => Literal decisions, SAT assignment (if any), Forced decision Clauses and Conflict Clauses.
+	 *
+	 *  HIGH => In addition to the prints in MED, print function name every time its entered.
+	 */
 	enum Debug_t {OFF, LOW, MED, HIGH};
-	Debug_t myDebug = MED;
+	Debug_t myDebug = OFF;
 
 
 	// Secondary copy for quicker BCP.
@@ -37,14 +46,12 @@ namespace SAT{
 
 	typedef struct p_clause{
 
-		int status;
+		int activity;
 		int Scount;
 		int UAcount;
 		clause * cl;
 
-		p_clause():status(0), Scount(0),UAcount(0){}
-
-		//Need a function to clear cl		
+		p_clause():activity(0), Scount(0),UAcount(0){}
 
 		~p_clause(){
 			delete cl;

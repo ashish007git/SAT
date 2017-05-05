@@ -193,7 +193,6 @@ bool evalUNSATclauses(lit * a, queue<f_clause*> *b, clause * &ccl)
 		{
 			if(temp->lc.at(i)->UAcount == 1)
 			{
-				//cout << temp->id << " .. " << i << endl;
 				//Find forced decision and insert into queue.
 				forced = findforceddecision(temp->lc.at(i)->cl);
 				if(!forced->fd->forced)
@@ -201,7 +200,6 @@ bool evalUNSATclauses(lit * a, queue<f_clause*> *b, clause * &ccl)
 					forced->fd->forced = true;
 					b->push(forced);
 				}
-				//cout << "Reached" << endl;
 			}
 			if(temp->lc.at(i)->UAcount == 0) //Unresolved clause, all literals assigned => UNSAT clause.
 			{
@@ -315,15 +313,6 @@ bool Solve(){
 		{
 			temp = S.top();
 
-			/*if(literals.at(1179)->lc.size() >= 13)
-			{
-				if(literals.at(1179)->lc.at(13)->UAcount != prev)
-				{
-					cout << ";;; " << prev << " ;;; " << literals.at(1179)->lc.at(13)->UAcount << endl;
-					prev = literals.at(1179)->lc.at(13)->UAcount;
-				}
-			}*/
-
 			//Code for forward traversal
 			if(backtrack == false)
 			{
@@ -393,8 +382,6 @@ bool Solve(){
 					//Learnt conflict clause is to be added to clauses - TBD
 					backtrack =  true;
 
-					//cout << "C " << ccl->list.size() << " " << fcl->list.size() << endl;
-
 					//Learn conflict clause only when mySolver is NOT in CBCP.
 					if(mySolver != CBCP) ccl = learnconflict(ccl, fcl, temp->id);
 
@@ -404,15 +391,6 @@ bool Solve(){
 						delete Q.front();
 						Q.pop(); //Empty queue upon conflicts.
 					}
-/*
-					//Backtracking the current assignment immediately.
-					Undo(temp);
-					//Reset flags in Lit
-					temp->visited = false;
-					temp->forced  = false;
-					temp->assign = false;
-					getcomp(temp)->assign = false;
-					S.pop(); */
 				} 
 			}
 			else    //Backtrack or Undo.
@@ -431,6 +409,7 @@ bool Solve(){
 					temp = getcomp(temp); //FF
 					//temp->visited = true;
 					temp->forced = true;
+					impclearrow(temp->id);
 					if(mySolver != CBCP) updateimparr(temp->id + 2*(temp->id%2) -1, ccl);
 					if(myDebug != OFF) cout << "B " << temp->id << endl;
 					ccl = NULL;
@@ -442,6 +421,9 @@ bool Solve(){
 					//Undo changes to clauses
 					backtrack = true;
 					Undo(temp);
+
+					//Free decision on backtrack, but not present in conflict clause.
+					if(!temp->forced) impclearrow(temp->id);
 
 					//Reset flags in Lit
 					//temp->visited = false;

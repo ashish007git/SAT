@@ -32,6 +32,8 @@ bool updatevsid(clause * cl)
 {
 	if(myDebug == HIGH) cout << __FUNCTION__ << endl;
 
+	if(cl == NULL) return true;
+
 	for(int i = 0; i < cl->list.size(); i++)
 	{
 		literals.at(cl->list.at(i))->vsid++;
@@ -55,10 +57,6 @@ void updateimparr(int id, clause * cl)
 {
 	if(myDebug == HIGH) cout << __FUNCTION__ << endl;
 
-	int prev1, prev2;
-	prev1 = 0;
-	prev2 = 0;
-
 	for(int i = 0 ; i < cl->list.size(); i++)
 	{
 		if((id+2*(id%2)-1) != cl->list.at(i))
@@ -71,18 +69,19 @@ void updateimparr(int id, clause * cl)
 			}
 			else imparr[cl->list.at(i)][id] = 1;
 		}
+	}
 
-		/*if(imparr[22][75] != prev1)
-		{
-			cout << "IMP " << imparr[22][75] << " " << prev1 << " " << cl->list.at(i) << endl;
-			prev1 = imparr[22][75];
-		}
-		if(imparr[22][76] != prev2)
-		{
-			cout << "IMP " << imparr[22][76] << " " << prev2 << " " << cl->list.at(i) << endl;
-			prev2 = imparr[22][76];
-		}*/
+	return;
+}
 
+void impclearrow(int id)
+{
+	if(myDebug == HIGH) cout << __FUNCTION__ << endl;
+
+	for(int j = 0; j < literals.size(); j++)
+	{
+		imparr[id][j] = 0;
+		imparr[id-1 + 2*(id%2)][j] = 0;
 	}
 
 	return;
@@ -94,9 +93,6 @@ void undoimparr(int id)
 
 	for(int j = 0; j < literals.size(); j++)
 		imparr[j][id] = 0;
-
-	/*for(int i = 0; i < literals.size(); i++)
-		imparr[id][i] = 0;*/
 
 	return;
 }
@@ -112,7 +108,7 @@ clause * impconflictclause(int id)
 			cl->list.push_back(i);
 	}
 
-	//sort(cl->list.begin(),cl->list.end());
+	sort(cl->list.begin(),cl->list.end());
 	return cl;
 }
 
@@ -130,13 +126,6 @@ int addconflictclause(clause * cl)
 	lc = new p_clause();
 	lc->cl = cl;
 
-	/*for(i = 0; i < size; i++)
-	{
-		cout<< larray.at(i) << "..";
-	}
-	cout<<"\n";*/
-
-
 	for(i = 0; i < size; i++)
 	{
 		l = cl->list.at(i);
@@ -145,7 +134,7 @@ int addconflictclause(clause * cl)
 		literals.at(l)->lc.push_back(lc);
 	}
 
-	lc->UAcount = 0; //TBD
+	lc->UAcount = 0;
 	lclauses.push_back(lc);
 
 	return 0;
@@ -288,15 +277,18 @@ clause * resolution(clause * a, clause * b, int d)
 			cl->list.push_back(b->list.at(k++));
 		}
 	}
-	for(i = 0; i < a->list.size(); i++)
+	if(myDebug == HIGH)
 	{
-		cout << a->list.at(i)<< " ";
+		for(i = 0; i < a->list.size(); i++)
+		{
+			cout << a->list.at(i)<< " ";
+		}
+		for(i = 0; i < b->list.size(); i++)
+		{
+			cout << b->list.at(i)<< " ";
+		}
+		cout << endl;
 	}
-	for(i = 0; i < b->list.size(); i++)
-	{
-		cout << b->list.at(i)<< " ";
-	}
-	cout << endl;
 	return cl;
 }
 */
