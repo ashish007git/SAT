@@ -11,6 +11,7 @@
 #include<fstream>
 #include<string>
 #include<vector>
+#include<ctime>
 
 
 using namespace SAT;
@@ -21,32 +22,38 @@ using namespace std;
 
 int main (int argc,char ** argv)
 {
+	string filename;
+	clock_t t;
 
-string filename;
-
-cout <<"My Solver is " << mySolver << endl;
+	cout <<"My Solver is " << mySolver << endl;
 
 
-if(argc == 0){
-	cout << " Missing arguments" << endl;
- }
-else
-{
-	filename = argv[1];
-}
+	if(argc == 0)
+	{
+		cout << " Missing arguments" << endl;
+	}
+	else
+	{
+		filename = argv[1];
+	}
 
-initiate_literals();
-if( parsefile(filename) == -1)
-{
-	cout << "ERROR in parsing file. EXIT!!" << endl;
+	initiate_literals();
+	if( parsefile(filename) == -1)
+	{
+		cout << "ERROR in parsing file. EXIT!!" << endl;
+		return 0;
+	}
+	initiateimparr();
+
+	cout << "Done parsing and created data structures" << endl;
+
+	t = clock();
+
+	if(Solve()) cout << "SATISFIABLE" << endl;
+	else cout << "UNSATISFIABLE" << endl;
+
+	t = clock() - t;
+	cout << "Solver Computation time is " << ((float)t/CLOCKS_PER_SEC) << " s" << endl;
+
 	return 0;
-}
-
-cout << "Done parsing and created data structures" << endl;
-
-if(Solve()) cout << "SATISFIABLE" << endl;
-else cout << "UNSATISFIABLE" << endl;
-
-return 0;
-
 }

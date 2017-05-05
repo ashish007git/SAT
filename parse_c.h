@@ -98,6 +98,8 @@ int addclause(int *larray)
 
 int parsefile(string filename)
 {
+	if(myDebug == HIGH) cout << __FUNCTION__ << endl;
+
 	char c;
 	int i=0;
 	int rlits[1000];
@@ -171,7 +173,7 @@ int parsefile(string filename)
 		return -1;	
 	}	
 
-	cout << "Clauses : " << clauses.size() << " Literals : " << literals.size() << endl;
+	if(myDebug != OFF) cout << "Clauses : " << clauses.size() << " Literals : " << literals.size() << endl;
 	return 0;
 
 }
