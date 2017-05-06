@@ -1,10 +1,3 @@
-/*
- * utils.h
- *
- *  Created on: May 5, 2017
- *      Author: raghavv
- */
-
 #ifndef UTILS_H_
 #define UTILS_H_
 
@@ -40,7 +33,7 @@ bool updatevsid(clause * cl)
 	}
 
 	resetvsid++;
-	if(resetvsid == 50)
+	if(resetvsid == 100)
 	{
 		for(int i = 0; i < literals.size(); i++)
 		{
@@ -70,6 +63,16 @@ void updateimparr(int id, clause * cl)
 			else imparr[cl->list.at(i)][id] = 1;
 		}
 	}
+
+	return;
+}
+
+
+void updateimp(int id)
+{
+	if(myDebug == HIGH) cout << __FUNCTION__ << endl;
+
+	imparr[id][id] = 1;
 
 	return;
 }
@@ -186,6 +189,22 @@ bool removeconflictclause(p_clause * lc)
 	return true;
 }
 
+void removeheuristic()
+{
+	if(myDebug == HIGH) cout << __FUNCTION__ << endl;
+
+	// Remove 1/16th of total learnt clauses and cap the learnt clause size to 500.
+	if(lclauses.size() >= 500)
+	{
+		for(int i = 0; i < 32; i++)
+		{
+			removeconflictclause(lclauses.at(0));
+		}
+	}
+
+	return;
+}
+
 
 //Learn clause and add it..
 clause * learnconflict(clause * a, clause * b, int d)
@@ -211,7 +230,11 @@ clause * learnconflict(clause * a, clause * b, int d)
 	else
 	{
 		//Form conflict clause
-		if(mySolver == NHCL || mySolver == HCL) addconflictclause(lc);
+		if(mySolver == NHCL || mySolver == HCL)
+		{
+			addconflictclause(lc);
+			removeheuristic();
+		}
 
 		if(mySolver == HCL) updatevsid(lc);
 

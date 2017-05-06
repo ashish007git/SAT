@@ -1,3 +1,6 @@
+#ifndef TYPES_H_
+#define TYPES_H_
+
 #include<iostream>
 #include<vector>
 
@@ -17,19 +20,19 @@ namespace SAT{
 	 * HCL => Non-chronological backtracking, Conflict detection, Conflict learning, Heuristic free decision.
 	 */
 	enum Solver_t {CBCP, NCBCP, NHCL, HCL};
-	Solver_t mySolver = NHCL;
+	Solver_t mySolver;
 
 	/*
-	 *  OFF => Basic print messages and Errors.
+	 *  OFF => SAT/UNSAT and SAT assignment (if any) and Errors.
 	 *
-	 *  LOW => Literal decisions, SAT assignment (if any).
+	 *  LOW => Literal decisions, SAT/UNSAT and SAT assignment (if any).
 	 *
-	 *  MED => Literal decisions, SAT assignment (if any), Forced decision Clauses and Conflict Clauses.
+	 *  MED => Literal decisions, SAT/UNSAT, SAT assignment (if any), Forced decision Clauses and Conflict Clauses.
 	 *
 	 *  HIGH => In addition to the prints in MED, print function name every time its entered.
 	 */
 	enum Debug_t {OFF, LOW, MED, HIGH};
-	Debug_t myDebug = OFF;
+	Debug_t myDebug;
 
 
 	// Secondary copy for quicker BCP.
@@ -122,3 +125,5 @@ namespace SAT{
 
 		}
 };
+
+#endif
