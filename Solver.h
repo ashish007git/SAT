@@ -1,94 +1,14 @@
+#ifndef SOLVER_H_
+#define SOLVER_H_
+
 #include <stack>
 #include <queue>
 #include <algorithm>
 #include "utils.h"
+#include "decisions.h"
 
 using namespace SAT;
 using namespace std;
-
-
-//To make first decison
-lit * firstdecision(){
-	if(myDebug == HIGH) cout << __FUNCTION__ << endl;
-
-	lit* temp;
-	temp = literals.at(1);
-	temp->assign = true;
-	getcomp(temp)->assign = true;
-	updateimp(getcomp(temp)->id);
-	if(myDebug != OFF) cout << "A " << temp->id << endl;
-	return temp;
-
-}
-
-
-
-//Assign next unassigned literal.
-lit * branchdecision(lit * temp){
-	if(myDebug == HIGH) cout << __FUNCTION__ << endl;
-
-	int mvsid = -1;
-	int mid = 0;
-
-	for(int i = 1; i < literals.size(); i++)
-	{
-		temp = literals.at(i);
-		if(temp->assign == false)
-		{
-			if(mvsid < temp->vsid)
-			{
-				mvsid = temp->vsid;
-				mid   = temp->id;
-			}
-		}
-	}
-	
-
-	if(!mid) return NULL;
-	else 
-	{
-		literals.at(mid)->assign = true;
-		getcomp(literals.at(mid))->assign = true;
-		updateimp(getcomp(literals.at(mid))->id);
-		if(myDebug != OFF) cout << "A " << mid << endl;
-		return literals.at(mid);
-	}
-}
-
-
-//Find Forced decisions
-f_clause * findforceddecision(clause* cl)
-{
-	if(myDebug == HIGH) cout << __FUNCTION__ << endl;
-
-	lit* temp;
-	f_clause * fc;
-
-	for(int i = 0; i < cl->list.size(); i++)
-	{
-		temp = literals.at(cl->list.at(i));
-		if( !temp->assign)
-		{
-
-			fc = new f_clause(temp,cl);
-
-			if(myDebug == MED || myDebug == HIGH)
-			{
-				cout << "FC : ";
-				for(i = 0; i < cl->list.size(); i++)
-				{
-					cout << cl->list.at(i)<< " ";
-				}
-				cout << endl;
-			}
-
-			return fc;
-
-		}
-	}
-
-	return NULL;
-}
 
 
 //Undo changes
@@ -144,11 +64,12 @@ bool evalSATclauses(lit * a)
 	int i;
 	if(a->pc.size() == 0) return false;
 
+	//Original set
 	for(i = 0; i < a->pc.size(); i++)
 	{
 		a->pc.at(i)->Scount++;
 	}
-	//Learnt
+	//Learnt set
 	for(i = 0; i < a->lc.size(); i++)
 	{
 		a->lc.at(i)->Scount++;
@@ -188,7 +109,7 @@ bool evalUNSATclauses(lit * a, queue<f_clause*> *b, clause * &ccl)
 	
 	} 
 
-	//Learnt clauses
+	//Learnt set
 	for(i = 0; i < temp->lc.size(); i++)
 	{
 		if(temp->lc.at(i)->Scount == 0)
@@ -257,25 +178,6 @@ bool evalUNSATclauses(lit * a, queue<f_clause*> *b, clause * &ccl)
 }
 
 
-
-//Check if the decision is related to conflict
-bool impdecision(int d, clause * cl)
-{
-	if(myDebug == HIGH) cout << __FUNCTION__ << endl;
-
-	if(mySolver == CBCP) return true;
-	else //Non-chronological backtracking.
-	{
-		int i;
-		if(cl == NULL) return true;
-		for( i = 0; i < cl->list.size(); i++)
-		{
-			if( (d -1 + 2*(d%2)) == cl->list.at(i)) return true;
-		}
-		return false;
-	}
-}
-
 bool checkSAT()
 {
 	int i;
@@ -292,6 +194,23 @@ bool checkSAT()
 	return true;
 }
 
+
+//evaluate SAT clauses
+bool preevalSATclauses(lit * a)
+{
+	if(myDebug == HIGH) cout << __FUNCTION__ << endl;
+
+	int i;
+	if(a->pc.size() == 0) return false;
+
+	//Original set
+	for(i = 0; i < a->pc.size(); i++)
+	{
+		removeclause(a->pc.at(0));
+	}
+
+	return true;
+}
 
 
 //evaluate UNSAT clauses.
@@ -322,6 +241,8 @@ bool preevalUNSATclauses(lit * a, queue<lit*> *b, clause * &ccl)
 		{
 			if(temp->pc.at(i)->UAcount == 1)
 			{
+				cout << temp->id << " " << i << endl;
+
 				//Find forced decision and insert into queue.
 				forced = findforceddecision(temp->pc.at(i)->cl);
 				if(!forced->fd->forced)
@@ -329,6 +250,7 @@ bool preevalUNSATclauses(lit * a, queue<lit*> *b, clause * &ccl)
 					forced->fd->forced = true;
 					b->push(forced->fd);
 				}
+				cout << "Reached2" << endl;
 				delete forced;
 			}
 			if(temp->pc.at(i)->UAcount == 0) //Unresolved clause, all literals assigned => UNSAT clause.
@@ -354,13 +276,13 @@ bool preevalUNSATclauses(lit * a, queue<lit*> *b, clause * &ccl)
 
 
 
-bool preSolve(){
+bool preSolve()
+{
 	if(myDebug == HIGH) cout << __FUNCTION__ << endl;
 
 		p_clause* temp;
 		queue<lit*> Q;
 		lit* L;
-		vector<int> slits;
 		clause * ccl = NULL;
 		vector<p_clause*>::iterator it;
 		int n;
@@ -372,12 +294,14 @@ bool preSolve(){
 			if(temp->UAcount == 1) //Clauses with Only 1 literal.
 			{
 				L = literals.at(temp->cl->list.at(0));
-				cout << "L " << L->id << endl;
 				L->assign = true;
-				L->forced = true;
 				getcomp(L)->assign = true;
-				getcomp(L)->forced = true;
-				Q.push(L);
+				if(!L->forced)
+				{
+					L->forced = true;
+					//getcomp(L)->forced = true;
+					Q.push(L);
+				}
 
 				it = find(L->pc.begin(), L->pc.end(), temp);
 				if(it != L->pc.end()) L->pc.erase(it);
@@ -388,49 +312,29 @@ bool preSolve(){
 			}
 		}
 
-		for(int i = 0; i < clauses.size(); i++)
-		{
-			temp = clauses.at(i);
-			for(int j = 0; j < temp->cl->list.size(); j++)
-				cout << " " << temp->cl->list.at(j);
-			cout << endl;
-		}
-
 		if(Q.empty()) return true; //No Single literal clauses.
 
 		while(!Q.empty())
 		{
 			L = Q.front();
-			cout << L->id << ".." << endl;
+			L->assign = true;
+			getcomp(L)->assign = true;
 			Q.pop();
-			slits.push_back(L->id);
+			slits.push_back((int)(L->id/2) - (L->id)*(L->id%2));
 
-			evalSATclauses(L);
+			cout << "L " << L->id << endl;
+			preevalSATclauses(L);
 
 			if(!preevalUNSATclauses(L, &Q, ccl))
 			{
-				cout << "Conflict detected!" << endl;
+				cout << "Conflict detected! preSolve()" << endl;
 				return false; //Conflict in preSolve stage.
 			}
 		}
 
-		if(checkSAT())
-		{
-			cout << "RESULT: SAT" << endl;
-			cout << "ASSIGNMENT: " << endl;
+		//if(myDebug == OFF) cout << "Clauses : " << clauses.size() << " Literals : " << literals.size() << endl;
 
-			for(int j = 0; j < slits.size(); j++)
-			{
-				id = slits.at(j);
-				n = (int)(id/2) - (id)*(id%2);
-				cout << n << " ";
-			}
-			cout << endl;
-
-			return true;
-		}
-
-		if(myDebug == OFF) cout << "Clauses : " << clauses.size() << " Literals : " << literals.size() << endl;
+		if(checkSAT()) return true;
 
 		return false;
 }
@@ -446,13 +350,10 @@ bool Solve(){
 		bool backtrack = false;
 		clause * ccl = NULL;
 		clause * fcl;
-		vector<int> slits;
 		int n;
 
-		//cout << "Started solving" << endl;
 		//To decide first variable
 		temp = firstdecision(); //FF
-
 
 		S.push(temp);
 
@@ -488,7 +389,9 @@ bool Solve(){
 							slits.push_back(n);
 						}
 
-						for(int j = slits.size()-1; j >= 0; j--)
+						sort(slits.begin(), slits.end());
+
+						for(int j = 0; j < slits.size(); j++)
 						{
 							cout << slits.at(j) << " ";
 						}
@@ -584,3 +487,5 @@ bool Solve(){
 
 	return false;
 }
+
+#endif

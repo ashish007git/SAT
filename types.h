@@ -1,3 +1,6 @@
+#ifndef TYPES_H_
+#define TYPES_H_
+
 #include<iostream>
 #include<vector>
 
@@ -17,7 +20,7 @@ namespace SAT{
 	 * HCL => Non-chronological backtracking, Conflict detection, Conflict learning, Heuristic free decision.
 	 */
 	enum Solver_t {CBCP, NCBCP, NHCL, HCL};
-	Solver_t mySolver = NCBCP;
+	Solver_t mySolver;
 
 	/*
 	 *  OFF => SAT/UNSAT and SAT assignment (if any) and Errors.
@@ -29,7 +32,7 @@ namespace SAT{
 	 *  HIGH => In addition to the prints in MED, print function name every time its entered.
 	 */
 	enum Debug_t {OFF, LOW, MED, HIGH};
-	Debug_t myDebug = OFF;
+	Debug_t myDebug;
 
 
 	// Secondary copy for quicker BCP.
@@ -95,6 +98,7 @@ namespace SAT{
 	vector<p_clause*> lclauses;
 	int resetvsid;
 	int ** imparr;
+	vector<int> slits;
 
 	void initiateimparr()
 	{
@@ -122,3 +126,5 @@ namespace SAT{
 
 		}
 };
+
+#endif

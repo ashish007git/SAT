@@ -1,10 +1,3 @@
-/*
- * Solver.cpp
- *
- *  Created on: Apr 27, 2017
- *      Author: raghavv
- */
-
 #include<iostream>
 #include"parse_c.h"
 #include"Solver.h"
@@ -16,17 +9,12 @@
 
 using namespace SAT;
 using namespace std;
-//Datastructure
-//vector of Lits
 
 
 int main (int argc,char ** argv)
 {
 	string filename;
 	clock_t t;
-
-	//cout <<"My Solver is " << mySolver << endl;
-
 
 	if(argc == 0)
 	{
@@ -35,6 +23,9 @@ int main (int argc,char ** argv)
 	else
 	{
 		filename = argv[1];
+
+		mySolver = HCL;
+		myDebug = MED;
 	}
 
 	initiate_literals();
@@ -45,12 +36,26 @@ int main (int argc,char ** argv)
 	}
 	initiateimparr();
 
-	//cout << "Done parsing and created data structures" << endl;
 
 	t = clock();
 
-	//if(!preSolve()) cout << "RESULT: UNSAT" << endl;
-	if(!Solve()) cout << "RESULT: UNSAT" << endl;
+	if(!preSolve()) cout << "RESULT: UNSAT" << endl;
+	else if(clauses.size() == 0)
+	{
+		cout << "RESULT: SAT" << endl;
+		cout << "ASSIGNMENT: " << endl;
+
+		sort(slits.begin(), slits.end());
+
+		for(int j = 0; j < slits.size(); j++)
+		{
+			cout << slits.at(j) <<" ";
+		}
+		cout << endl;
+
+		//Clauses satisfied by preSolve()
+	}
+	else if(!Solve()) cout << "RESULT: UNSAT" << endl;
 
 	t = clock() - t;
 	cout << "Solver Computation time is " << ((float)t/CLOCKS_PER_SEC) << " s" << endl;

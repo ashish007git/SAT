@@ -1,10 +1,3 @@
-/*
- * utils.h
- *
- *  Created on: May 5, 2017
- *      Author: raghavv
- */
-
 #ifndef UTILS_H_
 #define UTILS_H_
 
@@ -200,7 +193,7 @@ void removeheuristic()
 {
 	if(myDebug == HIGH) cout << __FUNCTION__ << endl;
 
-	// Remove 1/16th of total learnt clauses and cap the learnt clause size to 100.
+	// Remove 1/16th of total learnt clauses and cap the learnt clause size to 500.
 	if(lclauses.size() >= 500)
 	{
 		for(int i = 0; i < 32; i++)
@@ -322,5 +315,52 @@ clause * resolution(clause * a, clause * b, int d)
 	return cl;
 }
 */
+
+
+//Remove conflict clause
+bool removepc(int id, p_clause * pc)
+{
+	if(myDebug == HIGH) cout << __FUNCTION__ << endl;
+
+	vector<p_clause*>::iterator it;
+
+	it = find(literals.at(id)->pc.begin(), literals.at(id)->pc.end(), pc);
+
+	if(it != literals.at(id)->pc.end())
+	{
+		literals.at(id)->pc.erase(it);
+		return true;
+	}
+
+	return false;
+}
+
+bool removeclause(p_clause * pc)
+{
+	if(myDebug == HIGH) cout << __FUNCTION__ << endl;
+
+	clause * cl;
+	cl = pc->cl;
+
+	for (int i = 0; i < cl->list.size(); i++)
+	{
+		removepc(cl->list.at(i), pc);
+	}
+
+	//remove from lclauses
+	vector<p_clause*>::iterator it;
+
+	it = find(clauses.begin(), clauses.end(), pc);
+
+	if(it != clauses.end())
+	{
+		clauses.erase(it);
+	}
+	else return false;
+
+	delete pc;
+
+	return true;
+}
 
 #endif /* UTILS_H_ */

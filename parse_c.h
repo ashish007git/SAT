@@ -1,3 +1,6 @@
+#ifndef PARSE_C_H_
+#define PARSE_C_H_
+
 #include<iostream>
 #include<fstream>
 #include<string>
@@ -177,3 +180,5 @@ int parsefile(string filename)
 	return 0;
 
 }
+
+#endif
